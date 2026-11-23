@@ -1,0 +1,391 @@
+DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<meta charset="UTF-8">
+
+<title>Football Career SIM</title>
+
+<style>
+
+*{box-sizing:border-box}
+
+body{margin:0;background:#07140f;color:#f4f7f5;font-family:Arial,sans-serif}
+
+.app{max-width:600px;margin:auto;padding:18px}
+
+header{text-align:center;padding:22px 10px;background:linear-gradient(135deg,#14532d,#052e16);border-radius:18px}
+
+h1{font-size:26px;margin:0}
+
+header p{color:#b7e4c7;margin:8px 0 0}
+
+.card{background:#12221b;border:1px solid #233b2e;border-radius:16px;padding:16px;margin-top:14px}
+
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px}
+
+.small{color:#9bb6a6;font-size:13px}
+
+.stat{margin:12px 0}
+
+.bar{height:8px;background:#25382e;border-radius:10px;overflow:hidden;margin-top:5px}
+
+.fill{height:100%;background:#4ade80;border-radius:10px}
+
+button{border:0;border-radius:12px;padding:14px;background:#22c55e;color:#07140f;font-weight:bold;font-size:15px;width:100%;margin-top:9px}
+
+button.secondary{background:#243c30;color:white}
+
+button:disabled{opacity:.4}
+
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+.big{font-size:24px;font-weight:bold}
+
+select,input{background:#20372b;color:white;border:1px solid #355341;border-radius:10px;padding:12px;width:100%;margin-top:8px}
+
+#setup{display:none}
+
+#game{display:none}
+
+#log{font-size:14px;line-height:1.6;color:#c6d8cc}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="app">
+
+<header>
+
+<h1>⚽ FOOTBALL CAREER SIM</h1>
+
+<p>FROM ZERO TO LEGEND</p>
+
+</header>
+
+<div id="setup" class="card">
+
+<h2>Create your player</h2>
+
+<input id="name" placeholder="Your footballer name">
+
+<select id="position">
+
+<option>ST</option><option>LW</option><option>RW</option>
+
+<option>CAM</option><option>CM</option><option>CDM</option>
+
+<option>CB</option><option>LB</option><option>RB</option><option>GK</option>
+
+</select>
+
+<select id="foot"><option>Right foot</option><option>Left foot</option></select>
+
+<button onclick="createPlayer()">START CAREER</button>
+
+</div>
+
+<div id="game">
+
+<div class="card">
+
+<div class="row">
+
+<div><div class="small">PLAYER</div><div class="big" id="pname"></div></div>
+
+<div style="text-align:right"><div class="small">OVERALL</div><div class="big" id="ovr"></div></div>
+
+</div>
+
+<div class="row" style="margin-top:14px">
+
+<div>Age: <span id="age"></span></div>
+
+<div>Position: <span id="pos"></span></div>
+
+</div>
+
+<div class="row" style="margin-top:12px">
+
+<div>📅 <span id="day"></span></div>
+
+<div>💰 $<span id="money"></span></div>
+
+</div>
+
+</div>
+
+<div class="card">
+
+<h3>📊 Attributes</h3>
+
+<div id="stats"></div>
+
+</div>
+
+<div class="card">
+
+<h3>🏟️ Club</h3>
+
+<div class="big" id="club"></div>
+
+<p class="small">Division 2 • Amateur Contract</p>
+
+</div>
+
+<div class="card">
+
+<h3>⚡ Actions</h3>
+
+<button onclick="train('pace')">🏃 Train Pace</button>
+
+<button onclick="train('shooting')">🎯 Train Shooting</button>
+
+<button onclick="train('passing')">🧠 Train Passing</button>
+
+<button onclick="train('dribbling')">⚡ Train Dribbling</button>
+
+<button class="secondary" onclick="rest()">😴 Rest</button>
+
+<button onclick="match()">⚽ Play Match</button>
+
+</div>
+
+<div class="card">
+
+<h3>🏆 Career statistics</h3>
+
+<div class="grid">
+
+<div>Matches <div class="big" id="matches"></div></div>
+
+<div>Goals <div class="big" id="goals"></div></div>
+
+<div>Assists <div class="big" id="assists"></div></div>
+
+<div>Rating <div class="big" id="rating"></div></div>
+
+</div>
+
+</div>
+
+<div class="card">
+
+<h3>📜 Career news</h3>
+
+<div id="log"></div>
+
+<button class="secondary" onclick="save()">💾 SAVE CAREER</button>
+
+<button class="secondary" onclick="resetGame()">🗑️ New career</button>
+
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+let p=null;
+
+const defaults={
+
+pace:50,shooting:50,passing:50,dribbling:50,
+
+defending:35,physical:45
+
+};
+
+function average(){
+
+return Math.round(Object.values(p.stats).reduce((a,b)=>a+b,0)/6);
+
+}
+
+function createPlayer(){
+
+let n=document.getElementById("name").value.trim();
+
+if(!n)n="Player";
+
+p={name:n,position:document.getElementById("position").value,
+
+foot:document.getElementById("foot").value,age:16,day:1,
+
+money:500,club:"Sylhet United",stats:{...defaults},
+
+matches:0,goals:0,assists:0,totalRating:0,news:["Career started! Welcome to Sylhet United."]};
+
+document.getElementById("setup").style.display="none";
+
+document.getElementById("game").style.display="block";
+
+render();
+
+}
+
+function train(s){
+
+if(p.day%7===0){alert("Match day! Play your match before training.");return}
+
+if(p.stats[s]>=99){alert("This attribute is already at maximum!");return}
+
+p.stats[s]=Math.min(99,p.stats[s]+(Math.random()<.3?2:1));
+
+p.money=Math.max(0,p.money-50);
+
+p.day++;
+
+p.news.unshift("Training completed: "+s+" improved!");
+
+render();
+
+}
+
+function rest(){
+
+p.day++;
+
+p.news.unshift("You rested and recovered.");
+
+render();
+
+}
+
+function match(){
+
+if(p.day%7!==0){
+
+alert("Match day is every 7th day. Train or rest until match day!");
+
+return;
+
+}
+
+let r=Math.max(1,Math.min(10,Math.round(5+(average()-50)/12+(Math.random()*2-1))));
+
+let g=0,a=0;
+
+if(p.position==="ST"||p.position==="LW"||p.position==="RW"){
+
+g=Math.random()<p.stats.shooting/100?1:0;
+
+g+=Math.random()<.15?1:0;
+
+}else{
+
+g=Math.random()<.35?1:0;
+
+}
+
+a=Math.random()<p.stats.passing/100*.35?1:0;
+
+p.matches++;p.goals+=g;p.assists+=a;p.totalRating+=r;
+
+p.money+=200+g*100+a*50;
+
+p.day++;
+
+p.news.unshift("Match played! Rating "+r+"/10 | "+g+" goal(s), "+a+" assist(s).");
+
+if(p.matches%5===0&&p.age<40){p.age++;p.news.unshift("Birthday! You are now "+p.age+" years old.");}
+
+render();
+
+}
+
+function save(){
+
+if(!p)return;
+
+localStorage.setItem("footballCareer",JSON.stringify(p));
+
+alert("Career saved on this device!");
+
+}
+
+function resetGame(){
+
+if(confirm("Start a new career? Your current career will be replaced.")){
+
+localStorage.removeItem("footballCareer");location.reload();
+
+}
+
+}
+
+function render(){
+
+document.getElementById("pname").textContent=p.name;
+
+document.getElementById("ovr").textContent=average();
+
+document.getElementById("age").textContent=p.age;
+
+document.getElementById("pos").textContent=p.position;
+
+document.getElementById("day").textContent="Day "+p.day;
+
+document.getElementById("money").textContent=p.money;
+
+document.getElementById("club").textContent=p.club;
+
+document.getElementById("matches").textContent=p.matches;
+
+document.getElementById("goals").textContent=p.goals;
+
+document.getElementById("assists").textContent=p.assists;
+
+document.getElementById("rating").textContent=p.matches?(p.totalRating/p.matches).toFixed(1):"—";
+
+let s="";
+
+for(let k in p.stats){
+
+s+=`<div class="stat"><div class="row"><span>${k.toUpperCase()}</span><span>${p.stats[k]}</span></div><div class="bar"><div class="fill" style="width:${p.stats[k]}%"></div></div></div>`;
+
+}
+
+document.getElementById("stats").innerHTML=s;
+
+document.getElementById("log").innerHTML=p.news.slice(0,12).map(x=>"• "+x).join("<br>");
+
+}
+
+let saved=localStorage.getItem("footballCareer");
+
+if(saved){
+
+try{
+
+p=JSON.parse(saved);
+
+document.getElementById("game").style.display="block";
+
+render();
+
+}catch(e){
+
+document.getElementById("setup").style.display="block";
+
+}
+
+}else{
+
+document.getElementById("setup").style.display="block";
+
+}
+
+</script>
+
+</body>
+
+</html>

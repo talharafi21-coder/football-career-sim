@@ -1,58 +1,40 @@
-DOCTYPE html>
+<!DOCTYPE html>
 
 <html lang="en">
 
 <head>
 
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <meta charset="UTF-8">
 
-<title>Football Career SIM</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<title>Football Career SIM 3D</title>
 
 <style>
 
 *{box-sizing:border-box}
 
-body{margin:0;background:#07140f;color:#f4f7f5;font-family:Arial,sans-serif}
+body{margin:0;overflow:hidden;background:#111;font-family:Arial;color:white}
 
-.app{max-width:600px;margin:auto;padding:18px}
+canvas{display:block}
 
-header{text-align:center;padding:22px 10px;background:linear-gradient(135deg,#14532d,#052e16);border-radius:18px}
+#ui{position:fixed;top:12px;left:0;width:100%;text-align:center;z-index:5;pointer-events:none}
 
-h1{font-size:26px;margin:0}
+#score{background:#111c;padding:10px 18px;border-radius:12px;font-size:20px;display:inline-block}
 
-header p{color:#b7e4c7;margin:8px 0 0}
+#help{font-size:12px;margin-top:8px;color:white}
 
-.card{background:#12221b;border:1px solid #233b2e;border-radius:16px;padding:16px;margin-top:14px}
+#controls{position:fixed;bottom:25px;width:100%;display:flex;justify-content:space-between;padding:0 20px;z-index:10}
 
-.row{display:flex;justify-content:space-between;align-items:center;gap:10px}
+#joy{width:120px;height:120px;border-radius:50%;background:#ffffff33;border:2px solid #ffffff77;position:relative;touch-action:none}
 
-.small{color:#9bb6a6;font-size:13px}
+#knob{width:48px;height:48px;border-radius:50%;background:#ffffffaa;position:absolute;left:34px;top:34px}
 
-.stat{margin:12px 0}
+#buttons{display:flex;align-items:end;gap:12px}
 
-.bar{height:8px;background:#25382e;border-radius:10px;overflow:hidden;margin-top:5px}
+.btn{border:0;border-radius:50%;width:76px;height:76px;background:#ffcc33;color:#111;font-weight:bold;font-size:16px;touch-action:none}
 
-.fill{height:100%;background:#4ade80;border-radius:10px}
-
-button{border:0;border-radius:12px;padding:14px;background:#22c55e;color:#07140f;font-weight:bold;font-size:15px;width:100%;margin-top:9px}
-
-button.secondary{background:#243c30;color:white}
-
-button:disabled{opacity:.4}
-
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-
-.big{font-size:24px;font-weight:bold}
-
-select,input{background:#20372b;color:white;border:1px solid #355341;border-radius:10px;padding:12px;width:100%;margin-top:8px}
-
-#setup{display:none}
-
-#game{display:none}
-
-#log{font-size:14px;line-height:1.6;color:#c6d8cc}
+#sprint{background:#77dd99}
 
 </style>
 
@@ -60,329 +42,395 @@ select,input{background:#20372b;color:white;border:1px solid #355341;border-radi
 
 <body>
 
-<div class="app">
+<div id="ui">
 
-<header>
+  <div id="score">YOU 0 - 0 AI | 00:00</div>
 
-<h1>⚽ FOOTBALL CAREER SIM</h1>
-
-<p>FROM ZERO TO LEGEND</p>
-
-</header>
-
-<div id="setup" class="card">
-
-<h2>Create your player</h2>
-
-<input id="name" placeholder="Your footballer name">
-
-<select id="position">
-
-<option>ST</option><option>LW</option><option>RW</option>
-
-<option>CAM</option><option>CM</option><option>CDM</option>
-
-<option>CB</option><option>LB</option><option>RB</option><option>GK</option>
-
-</select>
-
-<select id="foot"><option>Right foot</option><option>Left foot</option></select>
-
-<button onclick="createPlayer()">START CAREER</button>
+  <div id="help">Move with joystick • SHOOT to kick • SPRINT to run</div>
 
 </div>
 
-<div id="game">
+<div id="controls">
 
-<div class="card">
+  <div id="joy"><div id="knob"></div></div>
 
-<div class="row">
+  <div id="buttons">
 
-<div><div class="small">PLAYER</div><div class="big" id="pname"></div></div>
+    <button class="btn" id="sprint">SPRINT</button>
 
-<div style="text-align:right"><div class="small">OVERALL</div><div class="big" id="ovr"></div></div>
+    <button class="btn" id="shoot">SHOOT</button>
 
-</div>
-
-<div class="row" style="margin-top:14px">
-
-<div>Age: <span id="age"></span></div>
-
-<div>Position: <span id="pos"></span></div>
+  </div>
 
 </div>
 
-<div class="row" style="margin-top:12px">
-
-<div>📅 <span id="day"></span></div>
-
-<div>💰 $<span id="money"></span></div>
-
-</div>
-
-</div>
-
-<div class="card">
-
-<h3>📊 Attributes</h3>
-
-<div id="stats"></div>
-
-</div>
-
-<div class="card">
-
-<h3>🏟️ Club</h3>
-
-<div class="big" id="club"></div>
-
-<p class="small">Division 2 • Amateur Contract</p>
-
-</div>
-
-<div class="card">
-
-<h3>⚡ Actions</h3>
-
-<button onclick="train('pace')">🏃 Train Pace</button>
-
-<button onclick="train('shooting')">🎯 Train Shooting</button>
-
-<button onclick="train('passing')">🧠 Train Passing</button>
-
-<button onclick="train('dribbling')">⚡ Train Dribbling</button>
-
-<button class="secondary" onclick="rest()">😴 Rest</button>
-
-<button onclick="match()">⚽ Play Match</button>
-
-</div>
-
-<div class="card">
-
-<h3>🏆 Career statistics</h3>
-
-<div class="grid">
-
-<div>Matches <div class="big" id="matches"></div></div>
-
-<div>Goals <div class="big" id="goals"></div></div>
-
-<div>Assists <div class="big" id="assists"></div></div>
-
-<div>Rating <div class="big" id="rating"></div></div>
-
-</div>
-
-</div>
-
-<div class="card">
-
-<h3>📜 Career news</h3>
-
-<div id="log"></div>
-
-<button class="secondary" onclick="save()">💾 SAVE CAREER</button>
-
-<button class="secondary" onclick="resetGame()">🗑️ New career</button>
-
-</div>
-
-</div>
-
-</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
 <script>
 
-let p=null;
+const scene=new THREE.Scene();
 
-const defaults={
+scene.background=new THREE.Color(0x87ceeb);
 
-pace:50,shooting:50,passing:50,dribbling:50,
+scene.fog=new THREE.Fog(0x87ceeb,35,100);
 
-defending:35,physical:45
+const camera=new THREE.PerspectiveCamera(60,innerWidth/innerHeight,.1,200);
 
-};
+camera.position.set(0,12,16);
 
-function average(){
+const renderer=new THREE.WebGLRenderer({antialias:true});
 
-return Math.round(Object.values(p.stats).reduce((a,b)=>a+b,0)/6);
+renderer.setSize(innerWidth,innerHeight);
 
-}
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
 
-function createPlayer(){
+document.body.insertBefore(renderer.domElement,document.body.firstChild);
 
-let n=document.getElementById("name").value.trim();
+scene.add(new THREE.HemisphereLight(0xffffff,0x448844,2));
 
-if(!n)n="Player";
+const sun=new THREE.DirectionalLight(0xffffff,2);
 
-p={name:n,position:document.getElementById("position").value,
+sun.position.set(10,20,10);
 
-foot:document.getElementById("foot").value,age:16,day:1,
+scene.add(sun);
 
-money:500,club:"Sylhet United",stats:{...defaults},
+const field=new THREE.Mesh(
 
-matches:0,goals:0,assists:0,totalRating:0,news:["Career started! Welcome to Sylhet United."]};
+ new THREE.PlaneGeometry(24,40),
 
-document.getElementById("setup").style.display="none";
+ new THREE.MeshLambertMaterial({color:0x268c43})
 
-document.getElementById("game").style.display="block";
+);
 
-render();
+field.rotation.x=-Math.PI/2;
 
-}
+scene.add(field);
 
-function train(s){
+const lines=new THREE.Group();
 
-if(p.day%7===0){alert("Match day! Play your match before training.");return}
+const white=new THREE.MeshBasicMaterial({color:0xffffff});
 
-if(p.stats[s]>=99){alert("This attribute is already at maximum!");return}
+function line(x1,z1,x2,z2){
 
-p.stats[s]=Math.min(99,p.stats[s]+(Math.random()<.3?2:1));
+ const dx=x2-x1,dz=z2-z1;
 
-p.money=Math.max(0,p.money-50);
+ const mesh=new THREE.Mesh(new THREE.BoxGeometry(Math.sqrt(dx*dx+dz*dz),.025,.08),white);
 
-p.day++;
+ mesh.position.set((x1+x2)/2,.03,(z1+z2)/2);
 
-p.news.unshift("Training completed: "+s+" improved!");
+ mesh.rotation.y=-Math.atan2(dz,dx);
 
-render();
-
-}
-
-function rest(){
-
-p.day++;
-
-p.news.unshift("You rested and recovered.");
-
-render();
+ lines.add(mesh);
 
 }
 
-function match(){
+line(-12,-20,12,-20);line(-12,20,12,20);
 
-if(p.day%7!==0){
+line(-12,-20,-12,20);line(12,-20,12,20);
 
-alert("Match day is every 7th day. Train or rest until match day!");
+line(-12,0,12,0);
 
-return;
+const circle=new THREE.Mesh(new THREE.RingGeometry(3.9,4,.8,64),white);
 
-}
+circle.rotation.x=-Math.PI/2;
 
-let r=Math.max(1,Math.min(10,Math.round(5+(average()-50)/12+(Math.random()*2-1))));
+circle.position.y=.04;
 
-let g=0,a=0;
+scene.add(circle);
 
-if(p.position==="ST"||p.position==="LW"||p.position==="RW"){
+function box(x,z,w,d){
 
-g=Math.random()<p.stats.shooting/100?1:0;
+ const m=new THREE.Mesh(new THREE.BoxGeometry(w,.03,d),white);
 
-g+=Math.random()<.15?1:0;
+ m.position.set(x,.04,z);
 
-}else{
-
-g=Math.random()<.35?1:0;
+ scene.add(m);
 
 }
 
-a=Math.random()<p.stats.passing/100*.35?1:0;
+box(0,-16,12,8);box(0,16,12,8);
 
-p.matches++;p.goals+=g;p.assists+=a;p.totalRating+=r;
+function makeGoal(z){
 
-p.money+=200+g*100+a*50;
+ const g=new THREE.Group();
 
-p.day++;
+ const mat=new THREE.MeshBasicMaterial({color:0xffffff});
 
-p.news.unshift("Match played! Rating "+r+"/10 | "+g+" goal(s), "+a+" assist(s).");
+ for(const [x,y] of [[-3,0],[3,0]]){
 
-if(p.matches%5===0&&p.age<40){p.age++;p.news.unshift("Birthday! You are now "+p.age+" years old.");}
+  const p=new THREE.Mesh(new THREE.BoxGeometry(.15,3,.15),mat);
 
-render();
+  p.position.set(x,1.5,0);g.add(p);
 
-}
+ }
 
-function save(){
+ const cross=new THREE.Mesh(new THREE.BoxGeometry(6,.15,.15),mat);
 
-if(!p)return;
+ cross.position.y=3;g.add(cross);
 
-localStorage.setItem("footballCareer",JSON.stringify(p));
+ g.position.z=z;
 
-alert("Career saved on this device!");
-
-}
-
-function resetGame(){
-
-if(confirm("Start a new career? Your current career will be replaced.")){
-
-localStorage.removeItem("footballCareer");location.reload();
+ scene.add(g);
 
 }
 
-}
+makeGoal(-20);makeGoal(20);
 
-function render(){
+function player(color,x,z){
 
-document.getElementById("pname").textContent=p.name;
+ const group=new THREE.Group();
 
-document.getElementById("ovr").textContent=average();
+ const body=new THREE.Mesh(new THREE.CylinderGeometry(.35,.45,1.2,12),new THREE.MeshLambertMaterial({color}));
 
-document.getElementById("age").textContent=p.age;
+ body.position.y=1.1;group.add(body);
 
-document.getElementById("pos").textContent=p.position;
+ const head=new THREE.Mesh(new THREE.SphereGeometry(.25,12,12),new THREE.MeshLambertMaterial({color:0xffcc99}));
 
-document.getElementById("day").textContent="Day "+p.day;
+ head.position.y=1.85;group.add(head);
 
-document.getElementById("money").textContent=p.money;
+ const legmat=new THREE.MeshLambertMaterial({color:0x222222});
 
-document.getElementById("club").textContent=p.club;
+ for(let s of [-1,1]){
 
-document.getElementById("matches").textContent=p.matches;
+  const leg=new THREE.Mesh(new THREE.BoxGeometry(.18,.65,.18),legmat);
 
-document.getElementById("goals").textContent=p.goals;
+  leg.position.set(s*.17,.35,0);group.add(leg);
 
-document.getElementById("assists").textContent=p.assists;
+ }
 
-document.getElementById("rating").textContent=p.matches?(p.totalRating/p.matches).toFixed(1):"—";
+ group.position.set(x,0,z);
 
-let s="";
+ scene.add(group);
 
-for(let k in p.stats){
-
-s+=`<div class="stat"><div class="row"><span>${k.toUpperCase()}</span><span>${p.stats[k]}</span></div><div class="bar"><div class="fill" style="width:${p.stats[k]}%"></div></div></div>`;
+ return group;
 
 }
 
-document.getElementById("stats").innerHTML=s;
+const me=player(0x1769ff,0,8);
 
-document.getElementById("log").innerHTML=p.news.slice(0,12).map(x=>"• "+x).join("<br>");
+const enemy=player(0xff3333,0,-8);
+
+const teammate=player(0x1769ff,-5,3);
+
+const enemy2=player(0xff3333,5,-3);
+
+const ball=new THREE.Mesh(new THREE.SphereGeometry(.25,20,20),new THREE.MeshLambertMaterial({color:0xffffff}));
+
+ball.position.set(0,.25,6);
+
+scene.add(ball);
+
+let vx=0,vz=0;
+
+let joyX=0,joyY=0;
+
+let isSprint=false;
+
+let goals=0,aiGoals=0,time=0;
+
+let last=performance.now();
+
+const score=document.getElementById("score");
+
+function updateScore(){
+
+ score.textContent="YOU "+goals+" - "+aiGoals+" AI | "+Math.floor(time/60).toString().padStart(2,"0")+":"+Math.floor(time%60).toString().padStart(2,"0");
 
 }
 
-let saved=localStorage.getItem("footballCareer");
+const joy=document.getElementById("joy");
 
-if(saved){
+const knob=document.getElementById("knob");
 
-try{
+let active=false;
 
-p=JSON.parse(saved);
+function moveJoy(e){
 
-document.getElementById("game").style.display="block";
+ const r=joy.getBoundingClientRect();
 
-render();
+ let x=e.clientX-r.left-r.width/2;
 
-}catch(e){
+ let y=e.clientY-r.top-r.height/2;
 
-document.getElementById("setup").style.display="block";
+ const max=36;
+
+ const len=Math.hypot(x,y);
+
+ if(len>max){x*=max/len;y*=max/len;}
+
+ joyX=x/max;
+
+ joyY=y/max;
+
+ knob.style.left=(34+x)+"px";
+
+ knob.style.top=(34+y)+"px";
 
 }
 
-}else{
+joy.addEventListener("pointerdown",e=>{
 
-document.getElementById("setup").style.display="block";
+ active=true;joy.setPointerCapture(e.pointerId);moveJoy(e);
+
+});
+
+joy.addEventListener("pointermove",e=>{if(active)moveJoy(e)});
+
+joy.addEventListener("pointerup",()=>{
+
+ active=false;joyX=joyY=0;knob.style.left="34px";knob.style.top="34px";
+
+});
+
+joy.addEventListener("pointercancel",()=>{
+
+ active=false;joyX=joyY=0;knob.style.left="34px";knob.style.top="34px";
+
+});
+
+document.getElementById("sprint").addEventListener("pointerdown",()=>isSprint=true);
+
+document.getElementById("sprint").addEventListener("pointerup",()=>isSprint=false);
+
+document.getElementById("sprint").addEventListener("pointercancel",()=>isSprint=false);
+
+document.getElementById("sprint").addEventListener("pointerleave",()=>isSprint=false);
+
+function shoot(){
+
+ const distance=me.position.distanceTo(ball.position);
+
+ if(distance<2.2){
+
+  const dir=new THREE.Vector3(0,0,-1);
+
+  if(Math.abs(joyX)+Math.abs(joyY)>.1){
+
+   dir.set(joyX,0,-joyY).normalize();
+
+  }
+
+  vx=dir.x*9;
+
+  vz=dir.z*14;
+
+  ball.position.y=.35;
+
+ }
 
 }
+
+document.getElementById("shoot").addEventListener("pointerdown",shoot);
+
+function resetBall(){
+
+ ball.position.set(0,.25,0);
+
+ vx=0;vz=0;
+
+ me.position.set(0,0,8);
+
+ enemy.position.set(0,0,-8);
+
+}
+
+function animate(now){
+
+ requestAnimationFrame(animate);
+
+ let dt=Math.min((now-last)/1000,.05);
+
+ last=now;time+=dt;
+
+ const speed=isSprint?9:5;
+
+ me.position.x+=joyX*speed*dt;
+
+ me.position.z+=joyY*speed*dt;
+
+ me.position.x=Math.max(-11,Math.min(11,me.position.x));
+
+ me.position.z=Math.max(-19,Math.min(19,me.position.z));
+
+ const dist=me.position.distanceTo(ball.position);
+
+ if(dist<1.4 && Math.abs(vx)+Math.abs(vz)<2){
+
+  ball.position.x=me.position.x;
+
+  ball.position.z=me.position.z-1;
+
+ }
+
+ ball.position.x+=vx*dt;
+
+ ball.position.z+=vz*dt;
+
+ vx*=.985;vz*=.985;
+
+ if(ball.position.y<.25)ball.position.y=.25;
+
+ if(Math.abs(ball.position.x)>11)vx*=-.6;
+
+ if(Math.abs(ball.position.z)>20){
+
+  if(ball.position.z<-20 && Math.abs(ball.position.x)<3){
+
+   goals++;resetBall();
+
+  }else if(ball.position.z>20 && Math.abs(ball.position.x)<3){
+
+   aiGoals++;resetBall();
+
+  }else vz*=-.6;
+
+ }
+
+ // Simple opponent pursuit
+
+ const dx=ball.position.x-enemy.position.x;
+
+ const dz=ball.position.z-enemy.position.z;
+
+ enemy.position.x+=dx*.7*dt;
+
+ enemy.position.z+=dz*.7*dt;
+
+ enemy.position.x=Math.max(-10,Math.min(10,enemy.position.x));
+
+ enemy.position.z=Math.max(-19,Math.min(19,enemy.position.z));
+
+ // Camera follows player
+
+ camera.position.x=me.position.x*.6;
+
+ camera.position.z=me.position.z+12;
+
+ camera.position.y=13;
+
+ camera.lookAt(me.position.x,0,me.position.z-3);
+
+ ball.rotation.x+=vz*dt*2;
+
+ ball.rotation.z+=vx*dt*2;
+
+ updateScore();
+
+ renderer.render(scene,camera);
+
+}
+
+requestAnimationFrame(animate);
+
+window.addEventListener("resize",()=>{
+
+ camera.aspect=innerWidth/innerHeight;
+
+ camera.updateProjectionMatrix();
+
+ renderer.setSize(innerWidth,innerHeight);
+
+});
 
 </script>
 
